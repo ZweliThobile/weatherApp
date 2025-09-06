@@ -206,6 +206,7 @@ fun DisplayForecastList(list : List<WeatherItem>, modifier: Modifier){
     LazyColumn(
         modifier = Modifier.
         fillMaxSize()
+            .padding(horizontal = 15.dp)
 
     ) {
 
