@@ -31,3 +31,8 @@ Fetch and display user information.
 
 # Key Data
 Open Weather API Key - 62754debf76ff8917bfc4676dd7bc824
+
+
+# Build info
+key alias - weather_app
+password -  appKey123
