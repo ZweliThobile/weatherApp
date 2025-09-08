@@ -57,6 +57,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.nio.file.WatchEvent
 import kotlin.coroutines.resume
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.Alignment
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -71,6 +73,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
                     HeadingDisplay()
                 }
             }
@@ -83,40 +86,45 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
-fun HeadingDisplay( modifier: Modifier = Modifier) {
-
-    
-
-
+fun HeadingDisplay(modifier: Modifier = Modifier) {
 
 
     val context = LocalContext.current
     val mainViewModel: MainViewModel = hiltViewModel()
 
 
-
     val weatherData = produceState<DataException<WeatherResponse, Boolean, Exception>>(
         initialValue = DataException(loading = true)
     ) {
-        value = mainViewModel.getWeatherData(
-            lat = getLocation(context)?.latitude.toString(),
-            lon = getLocation(context)?.longitude.toString()
-        )
+        val location  = getLocation(context)
+        if (location!=null) {
+            value = mainViewModel.getWeatherData(
+                lat = location.latitude.toString(),
+                lon = location.longitude.toString()
+            )
+        }
 
     }.value
 
     val fiveDayForecast = produceState<DataException<FiveDayWeatherResponse, Boolean, Exception>>(
         initialValue = DataException(loading = true)
     ) {
-        value = mainViewModel.getFiveDayWeatherForecast(
-            lat = getLocation(context)?.latitude.toString(),
-            lon = getLocation(context)?.longitude.toString()
-        )
+        val location  = getLocation(context)
+        if (location!=null){
+            value = mainViewModel.getFiveDayWeatherForecast(
+
+                lat = location.latitude.toString(),
+                lon = location.longitude.toString()
+            )
+        }
+
     }.value
 
 
     if (weatherData.loading == true) {
         Log.e("", "========================== loading")
+
+        LoaderScreen()
     } else if (weatherData.data != null && fiveDayForecast.data !=null) {
        // Log.e("", "========================== data  = ${weatherData.data}")
         Log.e("", "++++++++++++++++++++++++++ data  = ${fiveDayForecast.data!!.list}")
@@ -204,8 +212,8 @@ fun DisplayForecastList(list : List<WeatherItem>, modifier: Modifier){
 
 
     LazyColumn(
-        modifier = Modifier.
-        fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .padding(horizontal = 15.dp)
 
     ) {
@@ -219,9 +227,20 @@ fun DisplayForecastList(list : List<WeatherItem>, modifier: Modifier){
 
 }
 
+@Composable
+fun LoaderScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+
 suspend fun getLocation(context: Context): Location? {
 
-    var fusedLocationClient: FusedLocationProviderClient =
+    val fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
 
     if (ActivityCompat.checkSelfPermission(
